@@ -40,7 +40,14 @@ class Adaline():
         ----------
         The net_input. Shape = [Num samples,]
         '''
-        pass
+        #compute the number of samples
+        num_samps = len(features)
+        #stack features with a column of ones on the left
+        bias_col = np.ones((num_samps,1))
+        data = np.hstack((bias_col, features))
+        #compute net input
+        net_input = data @ self.wts
+        return net_input
 
     def activation(self, net_in):
         '''
