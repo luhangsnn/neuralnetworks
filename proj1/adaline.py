@@ -62,7 +62,8 @@ class Adaline():
         ----------
         net_act. ndarray. Shape = [Num samples N,]
         '''
-        pass
+        net_act = net_in
+        return net_act
 
     def compute_loss(self, y, net_act):
         ''' Computes the Sum of Squared Error (SSE) loss (over a single training epoch)
@@ -78,7 +79,9 @@ class Adaline():
         ----------
         float. The SSE loss (across a single training epoch).
         '''
-        pass
+        squared_error = np.square(y - net_act)
+        SSE = 1/2 * np.sum(squared_error)
+        return SSE
 
     def compute_accuracy(self, y, y_pred):
         ''' Computes accuracy (proportion correct) (across a single training epoch)
@@ -162,4 +165,24 @@ class Adaline():
             - Compute the error, loss, and accuracy (across the entire epoch).
             - Do backprop to update the weights and bias.
         '''
-        pass
+        #initialize weights
+        mu, sigma = 0, 0.01
+        self.wts = np.random.normal(mu, sigma, len(features[0])+1)
+
+        self.loss_history = []
+        self.acc_history = []
+        #main loop
+        for i in range(n_epochs):
+            #pass the inputs
+            net_in = self.net_input(features)
+            net_act = self.activation(net_in)
+            #compute the error, loss, and accuracy
+            loss = self.compute_loss(y, net_act)
+            accuracy = self.compute_accuracy(y, net_act)
+            self.loss_history.append(loss)
+            self.acc_history.append(accuracy)
+            
+            #do backprop to update weights and bias
+            gradient = self.gradient(loss, features)
+            self.wts = self.wts - lr * gradient
+        return self.loss_history, self.acc_history
