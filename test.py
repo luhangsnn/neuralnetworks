@@ -9,6 +9,7 @@ print("TESTING BRANCH CHANGES ON LOCAL 9/7")
 print("testing sync - client 2")
 print("testing sync issues - client 1")
 
+
 print("testing branch changes on local")
 
     def fit(self, features, y, n_epochs=1000, lr=0.001):
@@ -74,3 +75,21 @@ print("testing branch changes on local")
         return self.loss_history, self.acc_history
 
         
+
+print("changes on master branch remote")
+
+def compute_accuracy(self, y, y_pred):
+        ''' Computes accuracy (proportion correct) (across a single training epoch)
+
+        Parameters:
+        ----------
+        y: ndarray. Shape = [Num samples N,]
+            True classes corresponding to each input sample in a training epoch  (coded as -1 or +1).
+        y_pred: ndarray. Shape = [Num samples N,]
+            Predicted classes corresponding to each input sample (coded as -1 or +1).
+
+        Returns:
+        ----------
+        float. The accuracy for each input sample in the epoch. ndarray.
+            Expressed as proportions in [0.0, 1.0]
+
