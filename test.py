@@ -72,3 +72,5 @@ print("testing branch changes on local")
             ### do we need to update bias as well? - oh we only update its weight
 
         return self.loss_history, self.acc_history
+
+        
