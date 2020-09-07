@@ -98,7 +98,7 @@ class Adaline():
         float. The accuracy for each input sample in the epoch. ndarray.
             Expressed as proportions in [0.0, 1.0]
         '''
-        pass
+        return (1 - np.mean(y_pred != y))
 
     def gradient(self, errors, features):
         ''' Computes the error gradient of the loss function (for a single epoch).
@@ -118,7 +118,10 @@ class Adaline():
         grad_wts: ndarray. shape=(Num features N,).
             Gradient with respect to the neuron weights in the input feature layer
         '''
-        pass
+        grad_bias = (-1) * np.sum(errors)
+        grad_wts = (-1) * errors.reshape((1,errors.shape[0])) @ features
+        
+        return grad_bias, grad_wts[0]
 
     def predict(self, features):
         '''Predicts the class of each test input sample
@@ -134,7 +137,15 @@ class Adaline():
 
         NOTE: Remember to apply the activation function!
         '''
-        pass
+        netIn = self.net_input(features)
+        netAct = self.activation(netIn)
+        pred = np.zeros(netAct.shape)
+        for i in range (netAct.shape[0]):
+            if netAct[i] >= 0:
+                pred[i] = 1
+            else:
+                pred[i] = -1 
+        return pred.astype(int)
 
     def fit(self, features, y, n_epochs=1000, lr=0.001):
         ''' Trains the network on the input features for self.n_epochs number of epochs
@@ -176,13 +187,24 @@ class Adaline():
             #pass the inputs
             net_in = self.net_input(features)
             net_act = self.activation(net_in)
-            #compute the error, loss, and accuracy
+
+            #compute errors and losses
+            errors = y - net_act
             loss = self.compute_loss(y, net_act)
-            accuracy = self.compute_accuracy(y, net_act)
+
+            #make prediction and compute accuracy
+            y_pred = self.predict(features)
+            accuracy = self.compute_accuracy(y, y_pred)
+
+
             self.loss_history.append(loss)
             self.acc_history.append(accuracy)
-            
+
             #do backprop to update weights and bias
-            gradient = self.gradient(loss, features)
-            self.wts = self.wts - lr * gradient
+            grad_bias, grad_wts = self.gradient(errors, features)
+            grad_wts = np.concatenate(([grad_bias], grad_wts))
+            self.wts = self.wts - lr * grad_wts
+            
+            ### do we need to update bias as well? - oh we only update its weight
+
         return self.loss_history, self.acc_history
