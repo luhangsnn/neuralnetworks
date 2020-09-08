@@ -196,15 +196,55 @@ class Adaline():
             y_pred = self.predict(features)
             accuracy = self.compute_accuracy(y, y_pred)
 
-
             self.loss_history.append(loss)
             self.acc_history.append(accuracy)
 
-            #do backprop to update weights and bias
+            #do backprop to update weights 
             grad_bias, grad_wts = self.gradient(errors, features)
             grad_wts = np.concatenate(([grad_bias], grad_wts))
             self.wts = self.wts - lr * grad_wts
             
             ### do we need to update bias as well? - oh we only update its weight
 
+        return self.loss_history, self.acc_history
+
+    def fit_early_stopping(self, features, y, n_epochs=1000, early_stopping=False, lr=0.001, loss_tol=0.1):
+        
+        #initialize weights
+        mu, sigma = 0, 0.01
+        self.wts = np.random.normal(mu, sigma, len(features[0])+1)
+
+        self.loss_history = []
+        self.acc_history = []
+        n = 0
+
+        while n < n_epochs:
+            #pass the inputs
+            net_in = self.net_input(features)
+            net_act = self.activation(net_in)
+
+            #compute errors and losses
+            errors = y - net_act
+            loss = self.compute_loss(y, net_act)
+            
+            #store previous loss
+            # prev_loss = loss
+
+            #make prediction and compute accuracy
+            y_pred = self.predict(features)
+            accuracy = self.compute_accuracy(y, y_pred)
+
+            self.loss_history.append(loss)
+            self.acc_history.append(accuracy)
+
+            if n > 0 and early_stopping == True and (self.loss_history[-2] - loss < loss_tol):
+                break
+
+            #do backprop to update weights
+            grad_bias, grad_wts = self.gradient(errors, features)
+            grad_wts = np.concatenate(([grad_bias], grad_wts))
+            self.wts = self.wts - lr * grad_wts
+            n += 1
+            
+        print(f"number of epochs: {n}")
         return self.loss_history, self.acc_history
