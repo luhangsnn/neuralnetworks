@@ -248,3 +248,35 @@ class Adaline():
             
         print(f"number of epochs: {n}")
         return self.loss_history, self.acc_history
+
+#create a new class named Perceptron
+class Perceptron(Adaline):
+    def __init__(self):
+        Adaline.__init__(self)
+
+    #override the netAct method: 
+    def activation(self, net_in):
+        '''
+        Applies the activation function to the net input and returns the output neuron's activation.
+        netAct = f(netIn) = 1 if netIn >= 0
+        netAct = f(netIn) = -1 if netIn < 0
+        Parameters:
+        ----------
+        net_in: ndarray. Shape = [Num samples N,]
+        Returns:
+        ----------
+        net_act. ndarray. Shape = [Num samples N,]
+        '''        
+        #create a net_act array in the same size as net_in
+        net_act = np.ones((len(net_in),))
+        #find the indices of netIN >= 0:
+        idx_1 = np.where(net_in >= 0)[0]
+        #set the rows with netIn >= 0 to 1
+        net_act[idx_1] = 1 
+
+        #find the indices of netIN <0 0:
+        idx_2 = np.where(net_in < 0)[0]
+        #set the rows with netIn < 0 to 0
+        net_act[idx_2] = 0
+        return net_act
+
