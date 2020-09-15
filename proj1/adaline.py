@@ -246,7 +246,43 @@ class Adaline():
             self.wts = self.wts - lr * grad_wts
             n += 1
             
-        print(f"number of epochs: {n}")
+        print(f"number of epochs in early stopping: {n}")
+        return self.loss_history, self.acc_history
+
+    def fit_early_stopping_fancy(self, features, y, n_epochs=1000, lr=0.001, loss_tol=0.1, fancy_stop=False):
+        mu, sigma = 0, 0.01
+        self.wts = np.random.normal(mu, sigma, len(features[0])+1)
+        self.loss_history = []
+        self.acc_history = []
+        difference = [] # keeps track of the difference
+        n = 0
+
+        while n < n_epochs:
+            net_in = self.net_input(features)
+            net_act = self.activation(net_in)
+
+            errors = y - net_act
+            loss = self.compute_loss(y, net_act)
+
+            y_pred = self.predict(features)
+            accuracy = self.compute_accuracy(y, y_pred)
+
+            self.loss_history.append(loss)
+            self.acc_history.append(accuracy)
+            
+            if n > 0:
+                difference.append(self.loss_history[-2] - loss)
+                # only terminates back propagation if the change relative to the average loss over the most recent 5 epochs is less than the tolerance
+                if fancy_stop == True and n > 5:                    
+                    if (sum(difference[-5:])/5) < loss_tol:
+                        break
+                    
+            grad_bias, grad_wts = self.gradient(errors, features)
+            grad_wts = np.concatenate(([grad_bias], grad_wts))
+            self.wts = self.wts - lr * grad_wts
+            n += 1
+            
+        print(f"number of epochs in fancy stopping: {n}")
         return self.loss_history, self.acc_history
 
 #create a new class named Perceptron
