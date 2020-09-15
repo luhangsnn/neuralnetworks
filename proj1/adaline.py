@@ -313,6 +313,6 @@ class Perceptron(Adaline):
         #find the indices of netIN <0 0:
         idx_2 = np.where(net_in < 0)[0]
         #set the rows with netIn < 0 to 0
-        net_act[idx_2] = 0
+        net_act[idx_2] = -1
         return net_act
 
