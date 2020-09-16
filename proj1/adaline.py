@@ -20,6 +20,7 @@ class Adaline():
         self.loss_history = None
         # Record of training accuracy. Will be a list. Value at index i corresponds to acc. on epoch i.
         self.accuracy_history = None
+        self.y_pred = None
 
     def get_wts(self):
         ''' Returns a copy of the network weight array'''
@@ -193,8 +194,8 @@ class Adaline():
             loss = self.compute_loss(y, net_act)
 
             #make prediction and compute accuracy
-            y_pred = self.predict(features)
-            accuracy = self.compute_accuracy(y, y_pred)
+            self.y_pred = self.predict(features)
+            accuracy = self.compute_accuracy(y, self.y_pred)
 
             self.loss_history.append(loss)
             self.acc_history.append(accuracy)
@@ -313,6 +314,5 @@ class Perceptron(Adaline):
         #find the indices of netIN <0 0:
         idx_2 = np.where(net_in < 0)[0]
         #set the rows with netIn < 0 to 0
-        net_act[idx_2] = 0
+        net_act[idx_2] = -1
         return net_act
-
