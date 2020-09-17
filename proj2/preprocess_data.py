@@ -26,7 +26,12 @@ def preprocess_stl(imgs, labels):
     3) Compute the mean of each image in the dataset, subtract it from each image
     4) Fix class labeling. Should span 0, 1, ..., 9 NOT 1,2,...10
     '''
-    pass
+    shape = imgs.shape
+    imgs = imgs.astype(float)
+    imgs_transformed = (imgs/255).reshape(shape[0], shape[1]*shape[2]*shape[3])
+    imgs_transformed = imgs_transformed - imgs_transformed.mean(axis=0)
+    labels = labels-1
+    return imgs_transformed, labels
 
 
 def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=500, n_dev_samps=500):
@@ -56,7 +61,14 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
         samps = n_train_samps + n_test_samps + n_valid_samps + n_dev_samps
         print(f'Error! Num samples {samps} does not equal num images {len(data)}!')
         return
-
+    
+    idx = [n_train_samps, n_test_samps+n_train_samps, n_valid_samps+n_test_samps+n_train_samps]
+    
+    # print(tuple(np.split([1,2,3,4], [1,2,3])))
+    print(data.shape)
+    (x_train, x_test, x_val, x_dev) = tuple(np.split(data, idx))
+    (y_train, y_test, y_val, y_dev) = tuple(np.split(y, idx))
+    return x_train, y_train, x_test, y_test, x_val, y_val, x_dev, y_dev
 
 def load_stl10(n_train_samps=3500, n_test_samps=500, n_valid_samps=500, n_dev_samps=500):
     '''Automates the process of loading in the STL-10 dataset and labels, preprocessing, and creating
