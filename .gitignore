@@ -1,3 +1,16 @@
 adaline.cpython-37_BASE_689.pyc
 /proj1/__pycache__/adaline.cpython-37_LOCAL_689.pyc
 /proj1/__pycache__/adaline.cpython-37_REMOTE_689.pyc
+/proj2/.ipynb_checkpoints/preprocess_stl10-checkpoint.ipynb
+/proj2/__pycache__/load_stl10_dataset.cpython-37.pyc
+/proj2/__pycache__/preprocess_data.cpython-37.pyc
+/proj2/data/stl10_binary.tar.gz
+/proj2/data/stl10_binary/class_names.txt
+/proj2/data/stl10_binary/fold_indices.txt
+/proj2/data/stl10_binary/test_X.bin
+/proj2/data/stl10_binary/test_y.bin
+/proj2/data/stl10_binary/train_X.bin
+/proj2/data/stl10_binary/train_y.bin
+/proj2/data/stl10_binary/unlabeled_X.bin
+/proj2/numpy/images.npy
+/proj2/numpy/labels.npy
