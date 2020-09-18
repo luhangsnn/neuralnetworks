@@ -86,4 +86,18 @@ def load_stl10(n_train_samps=3500, n_test_samps=500, n_valid_samps=500, n_dev_sa
     x_dev (development samples),
     y_dev (development labels)
     '''
-    pass
+    #loading dataset and labels
+    stl_imgs, stl_labels = load_stl10_dataset.load()
+    #preprocessing
+    stl_imgs_pp, stl_labels_pp = preprocess_stl(stl_imgs, stl_labels)
+    #creating the train/test/validation/dev/splits
+    if n_train_samps + n_test_samps + n_valid_samps + n_dev_samps != len(stl_imgs_pp):
+        samps = n_train_samps + n_test_samps + n_valid_samps + n_dev_samps
+        print(f'Error! Num samples {samps} does not equal num images {len(stl_imgs_pp)}!')
+        return
+    
+    idx = [n_train_samps, n_test_samps+n_train_samps, n_valid_samps+n_test_samps+n_train_samps]
+
+    (x_train, x_test, x_val, x_dev) = tuple(np.split(stl_imgs_pp, idx))
+    (y_train, y_test, y_val, y_dev) = tuple(np.split(stl_labels_pp, idx))
+    return x_train, y_train, x_test, y_test, x_val, y_val, x_dev, y_dev
