@@ -38,9 +38,6 @@ class SoftmaxLayer():
         -----------
         float. accuracy in range [0, 1]
         '''
-        # print("y_pred ", y_pred)
-        # print("y ",y)
-        # print(np.mean(y_pred!=y))
         return (1 - np.mean(y_pred != y))
 
     def net_in(self, features):
@@ -80,17 +77,13 @@ class SoftmaxLayer():
         '''
         #initialize a matrix of zeros with shape (len(y), num_classes)
         y_one_hot = np.zeros((len(y), num_classes))
-        for i in range(len(y_one_hot)):
-            #DEBUG
-            try:
-                y_one_hot[i,y[i]] = 1
-            except:
-                print("RISING EXCEPTION: the shape doesn't match")
-                print(y_one_hot.shape, i, y[i])
-                exit()
+        index0 = np.arange(len(y))
+        index1 = y
+        y_one_hot[index0, index1] = 1
         return y_one_hot
 
-    def fit(self, features, y, n_epochs=10000, lr=0.0001, mini_batch_sz=256, reg=0, verbose=2):
+
+    def fit(self, features, y, n_epochs=10000, lr=0.0001, mini_batch_sz=256, reg=0, verbose=2, replacement = True):
         '''Trains the network to data in `features` belonging to the int-coded classes `y`.
         Implements stochastic mini-batch gradient descent
 
@@ -157,8 +150,10 @@ class SoftmaxLayer():
             for j in range(iteration):
                 #generate a set of random index
                 series = np.arange(num_samps)
-                index = np.random.choice(series, size = (mini_batch_sz,), replace=True)
-                # print(index)
+                if replacement == True:
+                    index = np.random.choice(series, size = (mini_batch_sz,), replace=True)
+                else:
+                    index = np.random.choice(series, size = (mini_batch_sz,), replace=False)
                 samples = features[index]
                 labels = y[index]
 
@@ -210,11 +205,8 @@ class SoftmaxLayer():
             Note: You can figure out the predicted class assignments from net_in (i.e. you dont
             need to apply the net activation function — it will not affect the most active neuron).
         '''
-        # SOMETHING IS WRONG HERE
         net_input = self.net_in(features)
-        # net_act = self.activation(net_input)
-        # print(net_input.shape, features.shape)
-        y_pred = np.argmax(features, axis = 0)
+        y_pred = np.argmax(net_input, axis = 1)
         return y_pred
 
     def activation(self, net_in):
