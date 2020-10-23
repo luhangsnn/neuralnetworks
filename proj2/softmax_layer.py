@@ -82,7 +82,6 @@ class SoftmaxLayer():
         y_one_hot[index0, index1] = 1
         return y_one_hot
 
-
     def fit(self, features, y, n_epochs=10000, lr=0.0001, mini_batch_sz=256, reg=0, verbose=2, replacement = True):
         '''Trains the network to data in `features` belonging to the int-coded classes `y`.
         Implements stochastic mini-batch gradient descent
@@ -143,16 +142,18 @@ class SoftmaxLayer():
         mu, sigma = 0, 0.01
         self.wts = np.random.normal(mu, sigma, (num_features, num_classes))
         self.b = np.random.normal(mu, sigma, (num_classes,))
-        iteration = int(len(features) / mini_batch_sz)
+        iteration = round(len(features) / mini_batch_sz)
         loss_history = []
         total_iteration = 0
         for i in range(n_epochs):
             for j in range(iteration):
                 #generate a set of random index
                 series = np.arange(num_samps)
-                if replacement == True:
+
+                if replacement == True: 
                     index = np.random.choice(series, size = (mini_batch_sz,), replace=True)
                 else:
+                    #for extension
                     index = np.random.choice(series, size = (mini_batch_sz,), replace=False)
                 samples = features[index]
                 labels = y[index]
@@ -327,3 +328,85 @@ class SoftmaxLayer():
         print(f'y one hot: {labels_one_hot.shape}, sum is {np.sum(labels_one_hot)}')
 
         return self.gradient(features, net_act, labels_one_hot, reg=reg)
+
+    def fit_batch(self, features, y, n_epochs=10000, lr=0.0001, reg=0, verbose=2):
+        '''
+        Extension: Using batch gradient descent; Each iteration is consists of running all the samples. 
+        '''
+        num_samps, num_features = features.shape
+        num_classes = np.max(y)+1
+        #initialize weights and biases
+        mu, sigma = 0, 0.01
+        self.wts = np.random.normal(mu, sigma, (num_features, num_classes))
+        self.b = np.random.normal(mu, sigma, (num_classes,))
+        loss_history = []
+        total_iteration = 0
+        for i in range(n_epochs):
+            #generate a set of random index
+            series = np.arange(num_samps)
+            index = np.arange(len(features))
+            
+            # np.random.choice(series, size = (len(features),), replace=True)
+
+            samples = features[index]
+            labels = y[index]
+
+            #transform the minibatch labels to one-hot-coding
+            num_uniqueclass = np.unique(labels).shape[0]
+            # print(num_uniqueclass, labels)
+            one_hot_coding = self.one_hot(labels, num_classes)
+            #compute net_in
+            net_in = self.net_in(samples)
+            #compute activation value
+            net_act = self.activation(net_in)
+            #compute loss
+            loss = self.loss(net_act, labels, reg)
+            loss_history.append(loss)
+            #compute the gradient
+            # print(samples.shape, net_act.shape, one_hot_coding.shape)
+            grad_wts, grad_b = self.gradient(samples, net_act, one_hot_coding, reg)
+            #update weights using gradient descent 
+            self.wts = self.wts - lr * grad_wts
+            self.b = self.b - lr * grad_b
+
+        return loss_history
+
+    def fit_stochastic(self, features, y, n_epochs=10000, lr=0.0001, reg=0, verbose=2):
+        '''
+        Extension: Using stochastic gradient descent; Each iteration is consists of running one samples. 
+        '''
+        num_samps, num_features = features.shape
+        num_classes = np.max(y)+1
+        #initialize weights and biases
+        mu, sigma = 0, 0.01
+        self.wts = np.random.normal(mu, sigma, (num_features, num_classes))
+        self.b = np.random.normal(mu, sigma, (num_classes,))
+        loss_history = []
+        total_iteration = 0
+        iteration = num_samps
+
+        for i in range(n_epochs):
+            for j in range(iteration):
+                sample = features[j]
+                label = y[j]
+                #transform the minibatch labels to one-hot-coding
+                num_uniqueclass = np.unique(label).shape[0]
+                # print(num_uniqueclass, labels)
+                one_hot_coding = self.one_hot([label], num_classes)
+                #compute net_in
+                net_in = self.net_in(sample)
+                #compute activation value
+                net_act = self.activation(net_in)
+                #compute the gradient
+                # print(samples.shape, net_act.shape, one_hot_coding.shape)
+                grad_wts, grad_b = self.gradient(sample, net_act, one_hot_coding, reg)
+                #update weights using gradient descent 
+                self.wts = self.wts - lr * grad_wts
+                self.b = self.b - lr * grad_b
+                total_iteration = total_iteration + 1
+
+                #compute loss when finish one epoch
+                loss = self.loss(net_act, [label], reg)
+                loss_history.append(loss)
+        # print(total_iteration, loss_history[-1])
+        return loss_history

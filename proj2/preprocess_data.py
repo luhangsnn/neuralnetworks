@@ -1,6 +1,6 @@
 '''preprocess_data.py
 Preprocessing data in STL-10 image dataset
-YOUR NAMES HERE
+Luhang Sun & Roujia Zhong
 CS343: Neural Networks
 Project 2: Multilayer Perceptrons
 '''
@@ -65,6 +65,7 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
     idx = [n_train_samps, n_test_samps+n_train_samps, n_valid_samps+n_test_samps+n_train_samps]
     
     # print(tuple(np.split([1,2,3,4], [1,2,3])))
+    print(data.shape)
     (x_train, x_test, x_val, x_dev) = tuple(np.split(data, idx))
     (y_train, y_test, y_val, y_dev) = tuple(np.split(y, idx))
     return x_train, y_train, x_test, y_test, x_val, y_val, x_dev, y_dev
