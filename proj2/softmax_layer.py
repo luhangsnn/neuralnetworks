@@ -182,13 +182,7 @@ class SoftmaxLayer():
                 self.wts = self.wts - lr * grad_wts
                 self.b = self.b - lr * grad_b
 
-                #printing out output
-                # if (total_iteration == 1100 or total_iteration == 0 or total_iteration == 500):
-                #     print("completed iter ", total_iteration)
-                #     print("loss = ", loss)
-
                 total_iteration = total_iteration + 1
-        # print(total_iteration, loss_history[-1])
         return loss_history
 
 

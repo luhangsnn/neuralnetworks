@@ -127,10 +127,10 @@ class MLP():
         y_net_in = features @ self.y_wts + self.y_b
         y_net_act = np.maximum(y_net_in, 0)
         z_net_in = y_net_act @ self.z_wts + self.z_b
-        N = -np.max(z_net_in, axis = 1, keepdims = True)
-        numerator = np.exp(z_net_in + N)
-        denominator = np.sum(numerator, axis = 1, keepdims = True)
-        z_net_act = numerator/denominator
+        # N = -np.max(z_net_in, axis = 1, keepdims = True)
+        # numerator = np.exp(z_net_in + N)
+        # denominator = np.sum(numerator, axis = 1, keepdims = True)
+        # z_net_act = numerator/denominator
 
         y_pred = np.argmax(z_net_in, axis = 1)
         return y_pred

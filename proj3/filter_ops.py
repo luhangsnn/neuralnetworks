@@ -9,7 +9,7 @@ import numpy as np
 import math
 
 
-def conv2_gray(img, kers, verbose=True):
+def conv2_gray(img, kers, verbose=False):
     '''Does a 2D convolution operation on GRAYSCALE `img` using kernels `kers`.
     Uses 'same' boundary conditions.
 
@@ -81,7 +81,7 @@ def conv2_gray(img, kers, verbose=True):
     
 
 
-def conv2(img, kers, verbose=True):
+def conv2(img, kers, verbose=False):
     '''Does a 2D convolution operation on COLOR or grayscale `img` using kernels `kers`.
     Uses 'same' boundary conditions.
 
@@ -120,41 +120,24 @@ def conv2(img, kers, verbose=True):
         print('Kernels must be square!')
         return
 
-    ker_sz = ker_x
-
-    #initialize filteredImg
     filteredImg = np.zeros((n_kers, n_chan, img_y, img_x))
-    #padding formula
-    pad = math.ceil((ker_x - 1)/2)
 
-    #initializing a padded matrix
-    pad_img = np.zeros((n_chan, img_y + 2*pad, img_x + 2*pad))
+    padding_x = int(np.ceil((ker_x-1)/2))
+    padding_y = int(np.ceil((ker_y-1)/2))
 
-    #'frame' input image into the padded one
-    for n in range(len(filteredImg[0])):
-        for i in range(len(filteredImg[0,0])):
-            for k in range(len(filteredImg[0,0,0])):
-                pad_img[n, i + pad, k + pad] = img[n,i,k]
-
-    #use each kernel to do convolution on the image
-    for i in range(len(kers)):
-        # flip the kernal
-        kernal = kers[i,:,:]
-        flip_kernal = np.flip(kernal)
-        
-        # print(img_y)
-        for n in range(n_chan):
-            for k in range(img_y):
-                for j in range(img_x):
-                    # get data matrix
-                    cur_data = pad_img[n, k:(ker_sz+k), j:(ker_sz+j)]
-                    # print(cur_data.shape, k,(ker_sz+k), j, (ker_sz+j))
-                    # print(np.sum(cur_data * flip_kernal[i], axis=(1,2)).shape)
-                    filteredImg[i, n, k, j] = np.sum(cur_data * flip_kernal[i])
+    img_p = np.zeros([n_chan, img_y+padding_y*2, img_x+padding_x*2])
+    img_p[:,padding_y:-padding_y, padding_x:-padding_x] = img
+    img = img_p
+    for i in range (n_kers):
+        kernal = np.flip(kers[i])
+        for n in range (n_chan):
+            for j in range(img_y):
+                for k in range (img_x):
+                    filteredImg[i, n, j, k] = np.sum(img[n, j:j+ker_y, k:k+ker_x] * kernal)
     
     return filteredImg
 
-def conv2nn(imgs, kers, bias, verbose=True):
+def conv2nn(imgs, kers, bias, verbose=False):
     '''General 2D convolution operation suitable for a convolutional layer of a neural network.
     Uses 'same' boundary conditions.
 
@@ -203,44 +186,29 @@ def conv2nn(imgs, kers, bias, verbose=True):
         print('Number of kernel channels doesnt match input num channels!')
         return
 
-    ker_sz = ker_x
-    output = np.zeros((batch_sz, n_kers, img_y, img_x))
+    filteredImg = np.zeros((batch_sz, n_kers, img_y, img_x))
 
-    #initialize filteredImg
-    filteredImg = np.zeros((batch_sz, n_kers, n_chans, img_y, img_x))
-    #padding formula
-    pad = math.ceil((ker_x - 1)/2)
+    padding_x = int(np.ceil((ker_x-1)/2))
+    padding_y = int(np.ceil((ker_y-1)/2))
 
-    #initializing a padded matrix
-    pad_img = np.zeros((batch_sz, n_chans, img_y + 2*pad, img_x + 2*pad))
+    img_p = np.zeros([batch_sz, n_chans, img_y+padding_y*2, img_x+padding_x*2])
+    img_p[:,:,padding_y:-padding_y, padding_x:-padding_x] = imgs
+    imgs = img_p
 
-    #'frame' input image into the padded one
-    for b in range (batch_sz):
-        for n in range(n_chans):
-            for i in range(len(output[0,0])):
-                for k in range(len(output[0,0,0])):
-                    pad_img[b, n, i + pad, k + pad] = imgs[b,n,i,k]
-
-    #use each kernel to do convolution on each image
-    for b in range (batch_sz):
-        for i in range(len(kers)):
-            kernal = kers[i,:,:,:]
-            flip_kernal = np.flip(kernal)
-            for n in range(n_chans):
-                for k in range(img_y):
-                    for j in range(img_x):
-                        # get data matrix
-                        cur_data = pad_img[b, n, k:(ker_sz+k), j:(ker_sz+j)]
-                        filteredImg[b, i, n, k, j] = np.sum(cur_data * flip_kernal[n,i])
-
-    output = filteredImg.sum(axis=2)
+    for pic in range(batch_sz):
+        img = imgs[pic]
+        for i in range (n_kers):
+            kernal = np.flip(kers[i], (1,2))
+            for j in range(img_y):
+                for k in range (img_x):
+                    filteredImg[pic, i, j, k] = np.sum(img[:, j:j+ker_y, k:k+ker_x] * kernal) + bias[i]
     
-    # SOMETHING WRONG HERE
-    # for i in range(len(bias)):
-    #     output [:,i] += bias[i]
-    
-    return output
+    return filteredImg
 
+def pad_with(vector, pad_width, iaxis, kwargs):
+    pad_value = kwargs.get('padder', 0)
+    vector[:pad_width[0]] = pad_value
+    vector[-pad_width[1]:] = pad_value
 
 def get_pooling_out_shape(img_dim, pool_size, strides):
     '''Computes the size of the output of a max pooling operation along one spatial dimension.
@@ -256,10 +224,10 @@ def get_pooling_out_shape(img_dim, pool_size, strides):
     int. The size in pixels of the output of the image after max pooling is applied, in the dimension
         img_dim.
     '''
-    pass
+    return int((img_dim- pool_size) / strides + 1)
 
 
-def max_pool(inputs, pool_size=2, strides=1, verbose=True):
+def max_pool(inputs, pool_size=2, strides=1, verbose=False):
     ''' Does max pooling on inputs. Works on single grayscale images, so somewhat comparable to
     `conv2_gray`.
 
@@ -288,10 +256,24 @@ def max_pool(inputs, pool_size=2, strides=1, verbose=True):
     '''
     img_y, img_x = inputs.shape
 
-    pass
+    #compute the output shape
+    output_x = int((len(inputs) - pool_size) / strides + 1)
+    output_y = int((len(inputs[0]) - pool_size) / strides + 1)
+    
+    #initialize outputs matrix
+    outputs = np.zeros((output_x, output_y))
+
+    for k in range(output_x):
+        for j in range(output_y):
+            #get the data matrix 
+            cur_data = inputs[0 + k * strides:pool_size + k * strides, 0 + j * strides : pool_size + j * strides]
+            #point multiplication and sum up
+            outputs[k,j] = np.max(cur_data)
+
+    return outputs
 
 
-def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
+def max_poolnn(inputs, pool_size=2, strides=1, verbose=False):
     ''' Max pooling implementation for a MaxPooling2D layer of a neural network
 
     Parameters:
@@ -323,4 +305,20 @@ def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
     if verbose:
         print(f'img_x={img_x}, img_y={img_y}, pool_size={pool_size}, strides={strides}')
 
-    pass
+    #compute the output shape
+    output_x = int((img_y- pool_size) / strides + 1)
+    output_y = int((img_x - pool_size) / strides + 1)
+    
+    #initialize outputs matrix
+    outputs = np.zeros((mini_batch_sz, n_chans, output_x, output_y))
+    # print(outputs.shape)
+    for i in range(mini_batch_sz):
+        for n in range(n_chans):
+            for k in range(output_x):
+                for j in range(output_y):
+                    #get the data matrix 
+                    cur_data = inputs[i, n, k*strides : pool_size+k*strides, j*strides : pool_size+j*strides]
+                    #max
+                    outputs[i, n, k,j] = np.max(cur_data)
+
+    return outputs
