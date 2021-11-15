@@ -1,2 +1,2 @@
 # Neural Net Projects
-Neural Networks Projects Fall 2020 - Luhang Sun &amp; Roujia Zhong
+Neural Networks Projects- Luhang Sun &amp; Roujia Zhong
